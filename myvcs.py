@@ -50,10 +50,26 @@ def copy_tree(src, dest, name):
 			else:
 				shutil.copy2(s, d)
 
+def revert(snapshot_dir, snapshot, dest):
+	reversion_dir = os.paht.join(snapshot_dir, snapshot)
+	copy_tree(reversion_dir, dest, 'myvcs')
+
+
 commands = [command for command in sys.argv]
 command_aliases = {
-	'snapshot': create_and_copy
+	'snapshot': create_and_copy,
+	'revert': revert
 }
 
 if len(commands) > 1:
-	command_aliases[commands[1]]('.myvcs')
+	if commands[1] == 'snapshot':
+		create_and_copy('.myvcs')
+	elif commands[1] == 'revert':
+		if not commands[2]:
+			print "You need a snapshot to revert to!"
+		else:
+			# MUST be in the main project dir
+			dest = os.getcwd()
+			snapshot_dir = os.path.join(dest, '.myvcs')
+			snapshot = commands[2]
+			revert(snapshot_dir, snapshot, dest)
