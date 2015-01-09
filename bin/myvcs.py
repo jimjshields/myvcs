@@ -121,11 +121,13 @@ def track_current_snapshot(snapshot, name=VCS_FOLDER):
 	open_write_close(tracking_file, str(snapshot), overwrite=True)
 
 def track_time(snapshot, name=VCS_FOLDER):
+	"""track the current time"""
 	time_file = os.path.join(PROJECT_DIR, name, 'times')
 	now = stringify_time(datetime.now())
 	open_write_close(time_file, '%s, %s\n' % (snapshot, now))
 
 def open_write_close(file, contents, overwrite=False):
+	"""open a file, write the contents to it, and close it"""
 	if overwrite:
 		f = open(file, 'w')
 	else:
@@ -141,9 +143,11 @@ def current_snapshot(name=VCS_FOLDER):
 	f.close()	
 
 def stringify_time(time):
+	"""returns time in a single string"""
 	return time.strftime("%Y%m%d%H%M%S")
 
 def log_times():
+	"""return a list of snapshots and times from the times file"""
 	time_file = os.path.join(PROJECT_DIR, VCS_FOLDER, 'times')
 	f = open(time_file, 'r')
 	times = f.read().split('\n')
