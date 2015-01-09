@@ -11,14 +11,28 @@ import errno
 # part 1 - basic backups
 
 # 1 - single backup
-def copy(src, dest, name):
+def create_and_copy(name):
 	"""recursively copy all of the files and directories from src to dest"""
-	if os.path.exists(dest):
-		shutil.rmtree(dest)
 
-	os.mkdir(dest)
-	print "Created %s" % (dest)
+	# get the source and destination
+	src = os.getcwd()
+	dest = os.path.join(src, name)
 
+	# if the destination doesn't exist, create it
+	if not os.path.exists(dest):
+		os.mkdir(dest)
+		print "Created %s" % (dest)
+
+	snapshots = [int(snapshot) for snapshot in os.listdir(dest)]
+
+	if not snapshots:
+		dest = os.path.join(dest, '1')
+		copy_tree(src, dest, name)
+	else:
+		dest = os.path.join(dest, str(max(snapshots) + 1))
+		copy_tree(src, dest, name)
+
+def copy_tree(src, dest, name):
 	for item in os.listdir(src):
 		if item != name:
 			s = os.path.join(src, item)
@@ -36,34 +50,10 @@ def copy(src, dest, name):
 			else:
 				shutil.copy2(s, d)
 
-def create_and_copy(name):
-	src = os.getcwd()
-	dest = src + "/%s" % (name)
-	copy(src, dest, name)
+commands = [command for command in sys.argv]
+command_aliases = {
+	'snapshot': create_and_copy
+}
 
-# 2 - snapshots
-def create_snapshot(name):
-	cwd = os.getcwd()
-	snapshot_dir = "%s/%s" % (cwd, name)
-	if not os.path.exists(name):
-		os.mkdir(name)
-	snapshots = []
-	for item in os.listdir(snapshot_dir):
-		snapshots.append(item)
-	if not snapshots:
-		create_and_copy('.myvcs/%s' % (1))
-	else:
-		create_and_copy('.myvcs/%s' % (max(snapshots) + 1))
-
-# commands = {
-# 	'dir': create_and_copy,
-# 	'snapshot': create_snapshot
-# }
-
-
-first_command = sys.argv[1]
-if first_command == 'dir':
-	print 'cool'
-	# create_and_copy('.myvcs')
-elif first_command == 'snapshot':
-	create_snapshot('.myvcs')
+if len(commands) > 1:
+	command_aliases[commands[1]]('.myvcs')
