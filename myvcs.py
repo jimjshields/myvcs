@@ -50,8 +50,26 @@ def copy_tree(src, dest, name):
 			else:
 				shutil.copy2(s, d)
 
+def remove_tree(folder, ignore_name):
+	for item in os.listdir(folder):
+		if item != ignore_name:
+			f = os.path.join(folder, item)
+
+			if os.path.isdir(f):
+				print "Removing directory..."
+
+				try:
+					shutil.removetree(f)
+				# except OSError as e:
+				# 	# if it already exists
+				# 	if e.errno == errno.EEXIST:
+				# 		print "Path exists: %s" % (d)
+			else:
+				os.remove(f)
+
 def revert(snapshot_dir, snapshot, dest):
-	reversion_dir = os.paht.join(snapshot_dir, snapshot)
+	reversion_dir = os.path.join(snapshot_dir, snapshot)
+	remove_tree(dest, '.myvcs')
 	copy_tree(reversion_dir, dest, 'myvcs')
 
 
