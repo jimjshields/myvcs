@@ -8,6 +8,8 @@ import os
 import shutil
 # for catching errors
 import errno
+# date operations
+from datetime import datetime
 
 # where the testing will be done
 PROJECT_DIR = '/Users/jimshields/Documents/Coding/hacker_school/myvcs/test_dir'
@@ -41,7 +43,8 @@ def create_snapshot(name=VCS_FOLDER):
 		print "You can't back up from an old snapshot! Get to the current snapshot and then back it up."
 	else:
 		snapshot_dest = os.path.join(dest, str(snapshot))
-		track_snapshot(snapshot)
+		track_current_snapshot(snapshot)
+		track_time(snapshot)
 
 		os.mkdir(snapshot_dest)
 		copy_tree(src, snapshot_dest, name)
@@ -80,7 +83,7 @@ def remove_tree(folder, ignore_name=VCS_FOLDER):
 
 def revert(snapshot_dir, snapshot, dest):
 	"""revert to the given snapshot"""
-	track_snapshot(snapshot)
+	track_current_snapshot(snapshot)
 	reversion_dir = os.path.join(snapshot_dir, snapshot)
 	remove_tree(dest)
 	copy_tree(reversion_dir, dest, 'myvcs')
@@ -89,21 +92,31 @@ def latest(snapshot_dir, dest):
 	"""revert to the latest snapshot"""
 	snapshots = list_snapshots()
 	latest_snapshot = str(max(snapshots))
-	track_snapshot(latest_snapshot)
 	revert(snapshot_dir, latest_snapshot, dest)
 
 def list_snapshots(name=VCS_FOLDER):
 	"""get a list of all snapshots"""
 	dest = os.path.join(PROJECT_DIR, name)
-	snapshots = [int(i) for i in os.listdir(dest) if i != 'head']
+	snapshots = [int(i) for i in os.listdir(dest) if i not in ['head', 'times']]
 	return snapshots
 
 # part 2 - metadata
-def track_snapshot(snapshot, name=VCS_FOLDER):
+def track_current_snapshot(snapshot, name=VCS_FOLDER):
 	"""track the current snapshot"""
 	tracking_file = os.path.join(PROJECT_DIR, name, 'head')
-	f = open(tracking_file, 'w')
-	f.write(str(snapshot))
+	open_write_close(tracking_file, str(snapshot), overwrite=True)
+
+def track_time(snapshot, name=VCS_FOLDER):
+	time_file = os.path.join(PROJECT_DIR, name, 'times')
+	now = stringify_time(datetime.now())
+	open_write_close(time_file, '%s, %s\n' % (snapshot, now))
+
+def open_write_close(file, contents, overwrite=False):
+	if overwrite:
+		f = open(file, 'w')
+	else:
+		f = open(file, 'a')
+	f.write(contents)
 	f.close()
 
 def current_snapshot(name=VCS_FOLDER):
@@ -112,6 +125,9 @@ def current_snapshot(name=VCS_FOLDER):
 	f = open(tracking_file, 'r')
 	return f.read()
 	f.close()	
+
+def stringify_time(time):
+	return time.strftime("%Y%m%d%H%M%S")
 
 # parse the cli args
 commands = [command for command in sys.argv]
