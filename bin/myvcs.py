@@ -19,9 +19,8 @@ VCS_FOLDER = '.myvcs'
 
 # 1 - single backup
 
-def create_snapshot(name=VCS_FOLDER):
-	"""recursively copy all of the files and directories from src to dest"""
-
+def initialize(name=VCS_FOLDER):
+	"""create the initial folder if it's not yet there"""
 	# get the source and destination
 	src = PROJECT_DIR
 	dest = os.path.join(src, name)
@@ -29,7 +28,19 @@ def create_snapshot(name=VCS_FOLDER):
 	# if the destination doesn't exist, create it
 	if not os.path.exists(dest):
 		os.mkdir(dest)
-		print "Created %s" % (dest)
+		head = os.path.join(dest, 'head')
+		times = os.path.join(dest, 'times')
+		open_write_close(head, '')
+		open_write_close(times, '')
+		print """Created:\n
+				repository: %s\n
+				head: %s\n
+				timelog: %s""" % (dest, head, times)
+	else:
+		print "%s has already been initialized." % (name)
+
+def create_snapshot(src, dest, name=VCS_FOLDER):
+	"""recursively copy all of the files and directories from src to dest"""
 
 	snapshots = list_snapshots(name)
 	current = int(current_snapshot())
@@ -134,8 +145,10 @@ commands = [command for command in sys.argv]
 
 # do things based on the commands
 if len(commands) > 1:
-	if commands[1] == 'snapshot':
-		create_snapshot()
+	if commands[1] == 'init':
+		initialize()
+	elif commands[1] == 'snapshot':
+		create_snapshot(PROJECT_DIR, VCS_FOLDER)
 	elif commands[1] == 'revert':
 		if not commands[2]:
 			print "You need a snapshot to revert to!"
