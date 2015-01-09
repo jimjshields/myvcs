@@ -23,7 +23,7 @@ def create_and_copy(name):
 		os.mkdir(dest)
 		print "Created %s" % (dest)
 
-	snapshots = [int(snapshot) for snapshot in os.listdir(dest)]
+	snapshots = list_snapshots(name)
 
 	if not snapshots:
 		dest = os.path.join(dest, '1')
@@ -71,6 +71,16 @@ def revert(snapshot_dir, snapshot, dest):
 	remove_tree(dest, '.myvcs')
 	copy_tree(reversion_dir, dest, 'myvcs')
 
+def latest(snapshot_dir, dest):
+	snapshots = list_snapshots('.myvcs')
+	latest_snapshot = max(snapshots)
+	revert(snapshot_dir, latest_snapshot, dest)
+
+def list_snapshots(name):
+	src = os.getcwd()
+	dest = os.path.join(src, name)
+	snapshots = [int(snapshot) for snapshot in os.listdir(dest)]
+	return snapshots
 
 commands = [command for command in sys.argv]
 
