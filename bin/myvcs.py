@@ -32,10 +32,7 @@ def initialize(name=VCS_FOLDER):
 		times = os.path.join(dest, 'times')
 		open_write_close(head, '')
 		open_write_close(times, '')
-		print """Created:\n
-				repository: %s\n
-				head: %s\n
-				timelog: %s""" % (dest, head, times)
+		print "Created:\nrepository: %s\nhead: %s\ntimelog: %s" % (dest, head, times)
 	else:
 		print "%s has already been initialized." % (name)
 
