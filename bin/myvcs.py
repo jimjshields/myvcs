@@ -9,15 +9,19 @@ import shutil
 # for catching errors
 import errno
 
+# where the testing will be done
+PROJECT_DIR = '/Users/jimshields/Documents/Coding/hacker_school/myvcs/test_dir'
+VCS_FOLDER = '.myvcs'
 
 # part 1 - basic backups
 
 # 1 - single backup
-def create_and_copy(name):
+
+def create_snapshot(name=VCS_FOLDER):
 	"""recursively copy all of the files and directories from src to dest"""
 
 	# get the source and destination
-	src = os.getcwd()
+	src = PROJECT_DIR
 	dest = os.path.join(src, name)
 
 	# if the destination doesn't exist, create it
@@ -34,7 +38,7 @@ def create_and_copy(name):
 		dest = os.path.join(dest, str(max(snapshots) + 1))
 		copy_tree(src, dest, name)
 
-def copy_tree(src, dest, ignore_name='.myvcs'):
+def copy_tree(src, dest, ignore_name=VCS_FOLDER):
 	"""copy the tree from src to dest
 	   ignore ignore_name"""
 
@@ -55,7 +59,7 @@ def copy_tree(src, dest, ignore_name='.myvcs'):
 			else:
 				shutil.copy2(s, d)
 
-def remove_tree(folder, ignore_name):
+def remove_tree(folder, ignore_name=VCS_FOLDER):
 	"""recursively remove all files and folders from specified folder
 	   ignore ignore_name"""
 	for item in os.listdir(folder):
@@ -69,26 +73,31 @@ def remove_tree(folder, ignore_name):
 
 def revert(snapshot_dir, snapshot, dest):
 	"""revert to the given snapshot"""
+	track_snapshot(snapshot)
 	reversion_dir = os.path.join(snapshot_dir, snapshot)
-	remove_tree(dest, '.myvcs')
+	remove_tree(dest)
 	copy_tree(reversion_dir, dest, 'myvcs')
 
 def latest(snapshot_dir, dest):
 	"""revert to the latest snapshot"""
-	snapshots = list_snapshots('.myvcs')
+	snapshots = list_snapshots()
 	latest_snapshot = str(max(snapshots))
 	revert(snapshot_dir, latest_snapshot, dest)
 
-def list_snapshots(name):
+def list_snapshots(name=VCS_FOLDER):
 	"""get a list of all snapshots"""
-	src = os.getcwd()
 	dest = os.path.join(src, name)
 	snapshots = [int(snapshot) for snapshot in os.listdir(dest)]
 	return snapshots
 
 # part 2 - metadata
-# def track_snapshot(snapshot):
-
+def track_snapshot(snapshot, name=VCS_FOLDER):
+	"""track the current snapshot"""
+	src = PROJECT_DIR
+	tracking_file = os.path.join(src, name, 'head')
+	f = File.Open(tracking_file, 'w')
+	f.write(snapshot)
+	f.close()
 
 # parse the cli args
 commands = [command for command in sys.argv]
@@ -96,17 +105,14 @@ commands = [command for command in sys.argv]
 # do things based on the commands
 if len(commands) > 1:
 	if commands[1] == 'snapshot':
-		create_and_copy('.myvcs')
+		create_snapshot()
 	elif commands[1] == 'revert':
 		if not commands[2]:
 			print "You need a snapshot to revert to!"
 		else:
-			# MUST be in the main project dir
-			dest = os.getcwd()
-			snapshot_dir = os.path.join(dest, '.myvcs')
+			snapshot_dir = os.path.join(PROJECT_DIR, VCS_FOLDER)
 			snapshot = commands[2]
-			revert(snapshot_dir, snapshot, dest)
+			revert(snapshot_dir, snapshot, PROJECT_DIR)
 	elif commands[1] == 'latest':
-		dest = os.getcwd()
-		snapshot_dir = os.path.join(dest, '.myvcs')
-		latest(snapshot_dir, dest)
+		snapshot_dir = os.path.join(PROJECT_DIR, VCS_FOLDER)
+		latest(snapshot_dir, PROJECT_DIR)
