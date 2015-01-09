@@ -96,3 +96,7 @@ if len(commands) > 1:
 			snapshot_dir = os.path.join(dest, '.myvcs')
 			snapshot = commands[2]
 			revert(snapshot_dir, snapshot, dest)
+	elif commands[1] == 'latest':
+		dest = os.getcwd()
+		snapshot_dir = os.path.join(dest, '.myvcs')
+		latest(snapshot_dir, dest)
