@@ -52,18 +52,11 @@ def copy_tree(src, dest, name):
 
 def remove_tree(folder, ignore_name):
 	for item in os.listdir(folder):
+		print 'Removing current files/folders...'
 		if item != ignore_name:
 			f = os.path.join(folder, item)
-
 			if os.path.isdir(f):
-				print "Removing directory..."
-
-				try:
-					shutil.removetree(f)
-				# except OSError as e:
-				# 	# if it already exists
-				# 	if e.errno == errno.EEXIST:
-				# 		print "Path exists: %s" % (d)
+				shutil.rmtree(f)
 			else:
 				os.remove(f)
 
