@@ -143,6 +143,13 @@ def current_snapshot(name=VCS_FOLDER):
 def stringify_time(time):
 	return time.strftime("%Y%m%d%H%M%S")
 
+def log_times():
+	time_file = os.path.join(PROJECT_DIR, VCS_FOLDER, 'times')
+	f = open(time_file, 'r')
+	times = f.read().split('\n')
+	return times
+	f.close()
+
 # parse the cli args
 commands = [command for command in sys.argv]
 
@@ -156,11 +163,18 @@ if len(commands) > 1:
 		if not commands[2]:
 			print "You need a snapshot to revert to!"
 		else:
-			snapshot_dir = os.path.join(PROJECT_DIR, VCS_FOLDER)
-			snapshot = commands[2]
-			revert(snapshot_dir, snapshot, PROJECT_DIR)
+			snapshots = list_snapshots()
+			if int(commands[2]) not in snapshots:
+				print "%s isn't a real snapshot! Try again." % (commands[2])
+			else:
+				snapshot_dir = os.path.join(PROJECT_DIR, VCS_FOLDER)
+				snapshot = commands[2]
+				revert(snapshot_dir, snapshot, PROJECT_DIR)
 	elif commands[1] == 'latest':
 		snapshot_dir = os.path.join(PROJECT_DIR, VCS_FOLDER)
 		latest(snapshot_dir, PROJECT_DIR)
 	elif commands[1] == 'current':
 		print current_snapshot()
+	elif commands[1] == 'log':
+		for time in log_times():
+			print time
