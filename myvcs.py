@@ -72,18 +72,25 @@ def revert(snapshot_dir, snapshot, dest):
 	copy_tree(reversion_dir, dest, 'myvcs')
 
 def latest(snapshot_dir, dest):
+	"""revert to the latest snapshot"""
 	snapshots = list_snapshots('.myvcs')
-	latest_snapshot = max(snapshots)
+	latest_snapshot = str(max(snapshots))
 	revert(snapshot_dir, latest_snapshot, dest)
 
 def list_snapshots(name):
+	"""get a list of all snapshots"""
 	src = os.getcwd()
 	dest = os.path.join(src, name)
 	snapshots = [int(snapshot) for snapshot in os.listdir(dest)]
 	return snapshots
 
+# part 2 - metadata
+def track_snapshot(snapshot):	
+
+# parse the cli args
 commands = [command for command in sys.argv]
 
+# do things based on the commands
 if len(commands) > 1:
 	if commands[1] == 'snapshot':
 		create_and_copy('.myvcs')
