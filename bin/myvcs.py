@@ -36,26 +36,32 @@ def initialize(name=VCS_FOLDER):
 	else:
 		print "%s has already been initialized." % (name)
 
-def create_snapshot(src, dest, name=VCS_FOLDER):
+def create_snapshot(src, name=VCS_FOLDER):
 	"""recursively copy all of the files and directories from src to dest"""
 
 	snapshots = list_snapshots(name)
-	current = int(current_snapshot())
+	dest = os.path.join(src, name)
 
 	if not snapshots:
 		snapshot = 1
-	else:
-		snapshot = max(snapshots) + 1
-
-	if max(snapshots) != current:
-		print "You can't back up from an old snapshot! Get to the current snapshot and then back it up."
-	else:
+		current = 1
 		snapshot_dest = os.path.join(dest, str(snapshot))
 		track_current_snapshot(snapshot)
 		track_time(snapshot)
-
 		os.mkdir(snapshot_dest)
 		copy_tree(src, snapshot_dest, name)
+	else:
+		snapshot = max(snapshots) + 1
+		current = int(current_snapshot())
+		if max(snapshots) != current:
+			print "You can't back up from an old snapshot! Get to the current snapshot and then back it up."
+		else:
+			snapshot_dest = os.path.join(dest, str(snapshot))
+			track_current_snapshot(snapshot)
+			track_time(snapshot)
+
+			os.mkdir(snapshot_dest)
+			copy_tree(src, snapshot_dest, name)
 
 def copy_tree(src, dest, ignore_name=VCS_FOLDER):
 	"""copy the tree from src to dest
