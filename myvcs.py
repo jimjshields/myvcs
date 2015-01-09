@@ -32,9 +32,12 @@ def create_and_copy(name):
 		dest = os.path.join(dest, str(max(snapshots) + 1))
 		copy_tree(src, dest, name)
 
-def copy_tree(src, dest, name):
+def copy_tree(src, dest, ignore_name='.myvcs'):
+	"""copy the tree from src to dest
+	   ignore ignore_name"""
+
 	for item in os.listdir(src):
-		if item != name:
+		if item != ignore_name:
 			s = os.path.join(src, item)
 			d = os.path.join(dest, item)
 
@@ -51,6 +54,8 @@ def copy_tree(src, dest, name):
 				shutil.copy2(s, d)
 
 def remove_tree(folder, ignore_name):
+	"""recursively remove all files and folders from specified folder
+	   ignore ignore_name"""
 	for item in os.listdir(folder):
 		print 'Removing current files/folders...'
 		if item != ignore_name:
@@ -61,16 +66,13 @@ def remove_tree(folder, ignore_name):
 				os.remove(f)
 
 def revert(snapshot_dir, snapshot, dest):
+	"""revert to the given snapshot"""
 	reversion_dir = os.path.join(snapshot_dir, snapshot)
 	remove_tree(dest, '.myvcs')
 	copy_tree(reversion_dir, dest, 'myvcs')
 
 
 commands = [command for command in sys.argv]
-command_aliases = {
-	'snapshot': create_and_copy,
-	'revert': revert
-}
 
 if len(commands) > 1:
 	if commands[1] == 'snapshot':
