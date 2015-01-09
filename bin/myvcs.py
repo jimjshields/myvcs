@@ -30,13 +30,21 @@ def create_snapshot(name=VCS_FOLDER):
 		print "Created %s" % (dest)
 
 	snapshots = list_snapshots(name)
+	current = int(current_snapshot())
 
 	if not snapshots:
-		dest = os.path.join(dest, '1')
-		copy_tree(src, dest, name)
+		snapshot = 1
 	else:
-		dest = os.path.join(dest, str(max(snapshots) + 1))
-		copy_tree(src, dest, name)
+		snapshot = max(snapshots) + 1
+
+	if max(snapshots) != current:
+		print "You can't back up from an old snapshot! Get to the current snapshot and then back it up."
+	else:
+		snapshot_dest = os.path.join(dest, str(snapshot))
+		track_snapshot(snapshot)
+
+		os.mkdir(snapshot_dest)
+		copy_tree(src, snapshot_dest, name)
 
 def copy_tree(src, dest, ignore_name=VCS_FOLDER):
 	"""copy the tree from src to dest
@@ -46,7 +54,6 @@ def copy_tree(src, dest, ignore_name=VCS_FOLDER):
 		if item != ignore_name:
 			s = os.path.join(src, item)
 			d = os.path.join(dest, item)
-
 			if os.path.isdir(s):
 				print "Copying directory..."
 
@@ -63,8 +70,8 @@ def remove_tree(folder, ignore_name=VCS_FOLDER):
 	"""recursively remove all files and folders from specified folder
 	   ignore ignore_name"""
 	for item in os.listdir(folder):
-		print 'Removing current files/folders...'
 		if item != ignore_name:
+			print 'Removing %s' % (item)
 			f = os.path.join(folder, item)
 			if os.path.isdir(f):
 				shutil.rmtree(f)
@@ -82,22 +89,29 @@ def latest(snapshot_dir, dest):
 	"""revert to the latest snapshot"""
 	snapshots = list_snapshots()
 	latest_snapshot = str(max(snapshots))
+	track_snapshot(latest_snapshot)
 	revert(snapshot_dir, latest_snapshot, dest)
 
 def list_snapshots(name=VCS_FOLDER):
 	"""get a list of all snapshots"""
-	dest = os.path.join(src, name)
-	snapshots = [int(snapshot) for snapshot in os.listdir(dest)]
+	dest = os.path.join(PROJECT_DIR, name)
+	snapshots = [int(i) for i in os.listdir(dest) if i != 'head']
 	return snapshots
 
 # part 2 - metadata
 def track_snapshot(snapshot, name=VCS_FOLDER):
 	"""track the current snapshot"""
-	src = PROJECT_DIR
-	tracking_file = os.path.join(src, name, 'head')
-	f = File.Open(tracking_file, 'w')
-	f.write(snapshot)
+	tracking_file = os.path.join(PROJECT_DIR, name, 'head')
+	f = open(tracking_file, 'w')
+	f.write(str(snapshot))
 	f.close()
+
+def current_snapshot(name=VCS_FOLDER):
+	"""display the current snapshot"""
+	tracking_file = os.path.join(PROJECT_DIR, name, 'head')
+	f = open(tracking_file, 'r')
+	return f.read()
+	f.close()	
 
 # parse the cli args
 commands = [command for command in sys.argv]
@@ -116,3 +130,5 @@ if len(commands) > 1:
 	elif commands[1] == 'latest':
 		snapshot_dir = os.path.join(PROJECT_DIR, VCS_FOLDER)
 		latest(snapshot_dir, PROJECT_DIR)
+	elif commands[1] == 'current':
+		print current_snapshot()
